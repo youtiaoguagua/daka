@@ -6,3 +6,4 @@ db.sqlite3
 test.py
 daka.zip
 /static/
+__pycache__/
