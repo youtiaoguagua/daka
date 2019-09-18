@@ -137,17 +137,17 @@ USE_L10N = True
 USE_TZ = True
 
 # 小程序设置
-WXAPPID = ""
-WXSECRET = ""
-WXTEPLETE = ""
+WXAPPID = "wxa1b729dac6cbb987"
+WXSECRET = "ea2712566c7cf5b3bd79d6a28f76d8f9"
+WXTEPLETE = "Lm6dXFw_s2zHHoZbMt_U0uo12Avqs-8BMsd8zUs8k4s"
 # 企业微信设置
-CORPID = "" #企业代码
-CORPSECRET = ""#应用私匙
-AGENTID = "" #应用代码
+CORPID = "ww5e8787839797e0c3" #企业代码
+CORPSECRET = "inmGskF8SgFKVLmTIR1sY5FdtlfW7gwlf7ZN9WQE7XA"#应用私匙
+AGENTID = "1000002" #应用代码
 
 # 企业微信回调配置
-WXTOKEN = ""
-WXENCODINGAESKEY = ""
+WXTOKEN = "1PNjSaXI7dFCJiqN9MS"
+WXENCODINGAESKEY = "PqfFKUzKO3KSQwroiPlZpTabmIfIQSMHgn4mS8nKPAY"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/

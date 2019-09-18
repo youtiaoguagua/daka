@@ -1,8 +1,8 @@
 celerybeat.pid
 celerybeat-schedule
-.idea
+.idea/
 dump.rdb
 db.sqlite3
 test.py
 daka.zip
-/static
+/static/
