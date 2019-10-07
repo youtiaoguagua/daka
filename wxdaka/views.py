@@ -1,39 +1,34 @@
-from django.shortcuts import render
-from rest_framework import generics
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated,IsAuthenticatedOrReadOnly
-from rest_framework.authentication import SessionAuthentication
+import json
+from datetime import date as todaydate
+from datetime import datetime
 
+import markdown
+import requests
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.http import HttpResponse
+from rest_framework import generics
+from rest_framework import status
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_extensions.cache.decorators import (
     cache_response
 )
-
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
+from wechatpy.enterprise import parse_message
+from wechatpy.enterprise.crypto import WeChatCrypto
+from wechatpy.enterprise.exceptions import InvalidCorpIdException
+from wechatpy.exceptions import InvalidSignatureException
 
-from .serializers import (LoginValidSerializers,LoginInfoSerializers,AllRoomSerializer, ReserverSerializer,)
 from .authenticate import AuthenticationCustomer
-from .models import (Room, Reserver, SettingModel,)
+from .models import (Room, Reserver, SettingModel, )
 from .permission import IsOwnerOrReadOnly
+from .serializers import (LoginValidSerializers, LoginInfoSerializers, AllRoomSerializer, ReserverSerializer, )
+from .tasks import SendReserverTask, SendTemplateMessage
 from .utils.timeMap import timemap
-from .tasks import SendReserverTask,SendTemplateMessage
-
-from django.contrib.auth.models import User
-from django.conf import settings
-from django.db.models import Q
-from django.http import HttpResponse
-
-from datetime import datetime
-from datetime import timedelta
-from datetime import date as todaydate
-import requests
-import json
-import markdown
-
-
-
-
 
 
 class Login(generics.CreateAPIView):
@@ -102,6 +97,9 @@ class ReserverRoomView(generics.ListCreateAPIView):
             return False
 
     def create(self, request, *args, **kwargs):
+        # 设置最多预定的个数
+        if self.queryset.filter(date__gte=todaydate.today(),user=request.user).count() >= 7:
+            return Response({'status':8,'error':"to many reserver"},status=status.HTTP_200_OK)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -110,7 +108,10 @@ class ReserverRoomView(generics.ListCreateAPIView):
             return Response({'status':'时间错误'},status=status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        SendReserverTask.delay(serializer.data)
+        # try:
+        #     SendReserverTask.delay(serializer.data)
+        # except BaseException as e:
+        #     raise e
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def list(self, request, *args, **kwargs):
@@ -165,10 +166,7 @@ class CheckLogin(APIView):
         return Response({'status':'success'},status=status.HTTP_200_OK)
 
 
-from wechatpy.enterprise.crypto import WeChatCrypto
-from wechatpy.exceptions import InvalidSignatureException
-from wechatpy.enterprise.exceptions import InvalidCorpIdException
-from wechatpy.enterprise import parse_message
+
 class WxEnterprise(APIView):
 
     def get(self,request):
@@ -212,7 +210,6 @@ class WxEnterprise(APIView):
             raise  # 处理异常情况
         else:
             msg = parse_message(decrypted_xml)
-            print(msg)
             msg_data = msg._data
             if msg_data['Event'] == 'taskcard_click':
                 splitMap = msg_data['EventKey'].split('-')
@@ -237,5 +234,7 @@ class WxEnterprise(APIView):
                    userInfo['event_status'] = "未通过"
                    SendTemplateMessage.delay(userInfo)
         return HttpResponse(None)
+
+
 
 

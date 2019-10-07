@@ -52,7 +52,7 @@ class Reserver(models.Model):
     contact_method = models.CharField(choices=GENDER_CHOICES, max_length=255, verbose_name="用什么联系")
     contact_info = models.CharField(max_length=255, verbose_name="联系方式")
     datecreat = models.DateTimeField(auto_now=True,verbose_name="创建时间")
-    is_activate = models.BooleanField(default=True, verbose_name="预约是否有效")
+    is_activate = models.BooleanField(default=False, verbose_name="预约是否有效")
     formid = models.CharField(max_length=255,null=True,blank=True,verbose_name="表单ID")
 
     def __str__(self):
@@ -65,8 +65,8 @@ class Reserver(models.Model):
 
 
 class SettingModel(models.Model):
-    college_name = models.CharField(max_length=255,verbose_name="书院名字")
-    content = RichTextField(verbose_name="书院介绍")
+    college_name = models.CharField(max_length=255,verbose_name="书院名字",blank=True,null=True)
+    content = RichTextField(verbose_name="书院介绍",blank=True,null=True)
 
     def __str__(self):
         return self.college_name
