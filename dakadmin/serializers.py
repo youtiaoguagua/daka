@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 import json
 from wxdaka.models import Reserver, Room, SettingModel
 from wxdaka.serializers import AllRoomSerializer
+from .models import RequestsModel
+
 
 
 
@@ -40,4 +42,10 @@ class CollegeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SettingModel
+        fields = "__all__"
+
+class RequestDataSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = RequestsModel
         fields = "__all__"

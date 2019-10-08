@@ -1,33 +1,33 @@
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
+from collections import OrderedDict
+from datetime import date
 
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import generics
-from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.decorators import action
-from rest_framework import viewsets
-from rest_framework import generics, mixins
-
-from .serializers import Login
-from rest_framework_simplejwt.tokens import RefreshToken
-
-from django.contrib.auth.signals import user_logged_in
 from django.contrib.admin.utils import NestedObjects
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from django.contrib.auth.signals import user_logged_in
 from django.utils.text import capfirst
 
+from rest_framework import generics, mixins
+from rest_framework import status
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from wxdaka.models import Reserver, Room, SettingModel
-from datetime import date
-from .serializers import ReserverSerializer, ReviewSerializer, RoomSerializer, CollegeSerializer
-from rest_framework.pagination import PageNumberPagination, CursorPagination
-from collections import OrderedDict
+from wxdaka.serializers import ReserverSerializer
+from .serializers import Login
+from .serializers import (ReserverSerializer, ReviewSerializer,
+                          RoomSerializer, CollegeSerializer,
+                          RequestDataSerializer, )
+from .models import RequestsModel
 
 
 class LargeResultsSetPagination(PageNumberPagination):
-    page_size = 10
+    page_size = 3
     page_size_query_param = 'page_size'
 
     def get_paginated_response(self, data):
@@ -74,7 +74,7 @@ class LoginView(APIView):
                 return Response(data=data)
 
 
-class getGloabDataView(APIView):
+class getGloabDataView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -178,11 +178,39 @@ class getCollegeInfoSet(mixins.UpdateModelMixin,
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
 class getReserverList(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReserverSerializer
+    queryset = Reserver.objects.all()
+    pagination_class = LargeResultsSetPagination
 
 
+from datetime import datetime, timedelta, date
 
-from rest_framework_simplejwt.authentication import JWTAuthentication
+
+class RequestsDataSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RequestDataSerializer
+    queryset = RequestsModel.objects.all()
+
+    # pagination_class = LargeResultsSetPagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        nowDate = date.today()
+        countList = []
+        for x in range(7):
+            allNowDate = queryset.filter(date=nowDate)
+            getCount = allNowDate.filter(method='GET').count()
+            postCount = allNowDate.filter(method='POST').count()
+            deleteCount = allNowDate.filter(method='DELETE').count()
+            countList.append({'date': nowDate,
+                              'get': getCount,
+                              'post': postCount,
+                              'delete': deleteCount})
+            nowDate = nowDate - timedelta(days=1)
+        return Response(countList)
 
 
 class test(APIView):
