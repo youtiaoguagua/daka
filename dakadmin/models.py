@@ -5,5 +5,10 @@ from django.db import models
 class RequestsModel(models.Model):
     method = models.CharField(max_length=20,blank=True,null=True,verbose_name="请求方法")
     ip  = models.GenericIPAddressField(blank=True,null=True,verbose_name="请求地址")
-    datetime = models.DateTimeField(auto_now_add=True)
-    date = models.DateField(auto_now_add=True)
+    datetime = models.DateTimeField()
+    date = models.DateField()
+
+    class Meta:
+        ordering = ['-datetime']
+        verbose_name = '请求统计'
+        verbose_name_plural = '请求统计'

@@ -3,9 +3,6 @@ from . import models
 from django.contrib.auth.admin import UserAdmin
 
 
-@admin.register(models.Room)
-class RoomAdmin(admin.ModelAdmin):
-    list_display = ['room_name', 'room_introduction']
 
 
 @admin.register(models.DetailUser)
@@ -43,6 +40,29 @@ class SettingModelAdmin(admin.ModelAdmin):
             return False
         else:
             return True
+
+@admin.register(models.Notice)
+class NoticeModelAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(models.Room)
+class RoomAdmin(admin.ModelAdmin):
+    list_display = ['room_name', 'room_introduction']
+
+class CollegeInline(admin.StackedInline):
+    model = models.Room
+    extra = 0
+
+@admin.register(models.College)
+class CollegeModelAdmin(admin.ModelAdmin):
+    inlines = (CollegeInline,)
+    def get_inline_instances(self, request, obj=None):
+        return [inline(self.model, self.admin_site) for inline in self.inlines]
+
+@admin.register(models.CollegeChat)
+class CollegeChatModelAdmin(admin.ModelAdmin):
+    pass
+
 
 
 admin.site.site_header = '书院预约'

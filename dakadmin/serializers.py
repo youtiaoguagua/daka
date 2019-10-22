@@ -44,6 +44,8 @@ class CollegeSerializer(serializers.ModelSerializer):
         model = SettingModel
         fields = "__all__"
 
+
+
 class RequestDataSerializer(serializers.ModelSerializer):
 
     class Meta:

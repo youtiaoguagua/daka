@@ -14,8 +14,12 @@ app = Celery('daka')
 # - namespace='CELERY' means all celery-related configuration keys
 #   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')
+app.conf.update(
+    enable_utc=True,
+)
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
 # platforms.C_FORCE_ROOT = True
+
